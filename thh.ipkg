@@ -1,0 +1,15 @@
+package thh
+
+version = 0.0.1
+brief = "Initial project template from idringen"
+
+author = zjhsdtc <zjhsdtc@gmail.com>
+license = BSD3
+homepage = https://github.com/githubuser/thh
+sourceloc = git@github.com:githubuser/thh.git
+bugtracker = https://github.com/githubuser/thh/issues
+
+sourcedir = src
+modules = Main
+executable = thh
+main = Main
