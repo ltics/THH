@@ -16,16 +16,16 @@ Eq Kind where
   (KFun k11 k12) == (KFun k21 k22) = k11 == k21 && k12 == k22
   _ == _ = False
 
-data Tyvar = TyvarC Id Kind
+data Tyvar = MkTyvar Id Kind
 
 Eq Tyvar where
-  (TyvarC id1 k1) == (TyvarC id2 k2) = id1 == id2 && k1 == k2
+  (MkTyvar id1 k1) == (MkTyvar id2 k2) = id1 == id2 && k1 == k2
   _ == _ = False
 
-data Tycon = TyconC Id Kind
+data Tycon = MkTycon Id Kind
 
 Eq Tycon where
-  (TyconC id1 k1) == (TyconC id2 k2) = id1 == id2 && k1 == k2
+  (MkTycon id1 k1) == (MkTycon id2 k2) = id1 == id2 && k1 == k2
   _ == _ = False
 
 data T = TVar Tyvar
@@ -41,31 +41,31 @@ Eq T where
   _ == _ = False
 
 tUnit : T
-tUnit = TCon (TyconC "()" Star)
+tUnit = TCon (MkTycon "()" Star)
 
 tChar : T
-tChar = TCon (TyconC "Char" Star)
+tChar = TCon (MkTycon "Char" Star)
 
 tInt : T
-tInt = TCon (TyconC "Int" Star)
+tInt = TCon (MkTycon "Int" Star)
 
 tInteger : T
-tInteger = TCon (TyconC "Integer" Star)
+tInteger = TCon (MkTycon "Integer" Star)
 
 tFloat : T
-tFloat = TCon (TyconC "Float" Star)
+tFloat = TCon (MkTycon "Float" Star)
 
 tDouble : T
-tDouble = TCon (TyconC "Double" Star)
+tDouble = TCon (MkTycon "Double" Star)
 
 tList : T
-tList = TCon (TyconC "[]" (KFun Star Star))
+tList = TCon (MkTycon "[]" (KFun Star Star))
 
 tArrow : T
-tArrow = TCon (TyconC "(->)" (KFun Star (KFun Star Star)))
+tArrow = TCon (MkTycon "(->)" (KFun Star (KFun Star Star)))
 
 tTuple2 : T
-tTuple2  = TCon (TyconC "(,)" (KFun Star (KFun Star Star)))
+tTuple2  = TCon (MkTycon "(,)" (KFun Star (KFun Star Star)))
 
 list : T -> T
 list t = TApp tList t
@@ -85,10 +85,10 @@ interface HasKind t where
   kind : t -> Kind
 
 HasKind Tyvar where
-  kind (TyvarC v k) = k
+  kind (MkTyvar v k) = k
 
 HasKind Tycon where
-  kind (TyconC v k) = k
+  kind (MkTycon v k) = k
 
 HasKind T where
   kind (TCon tc) = kind tc
