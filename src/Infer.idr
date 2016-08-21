@@ -7,8 +7,8 @@ import Data.List
 Subst : Type
 Subst = List (Tyvar, T)
 
-emptySet : Subst
-emptySet = []
+emptySubst : Subst
+emptySubst = []
 
 infixr 4 +->
 (+->) : Tyvar -> T -> Subst
@@ -40,3 +40,31 @@ merge : Monad m => Subst -> Subst -> m Subst
 merge s1 s2 = if agree then return (s1 ++ s2) else error "merge fails"
   where agree = all (\v => apply s1 (TVar v) == apply s2 (TVar v))
                     (map fst s1 `intersect` map fst s2)
+
+varBind : Monad m => Tyvar -> T -> m Subst
+varBind u t = case t == TVar u of
+                True => return emptySubst
+                False => case u `elem` tv t of
+                           True => error "occurs check fails"
+                           False => case kind u /= kind t of
+                                      True => error "kinds do not match"
+                                      False => return (u +-> t)
+
+-- most general unifier
+mgu : Monad m => T -> T -> m Subst
+mgu (TApp l r) (TApp l' r') = do s1 <- mgu l l'
+                                 s2 <- mgu (apply s1 r) (apply s1 r')
+                                 return (s2 @@ s1)
+mgu (TVar u) t = varBind u t
+mgu t (TVar u) = varBind u t
+-- think about the trivial types TInt TBool TChar TPair TList
+mgu (TCon tc1) (TCon tc2) with (tc1 == tc2) | True = return emptySubst
+mgu t1 t2 = error "types do not unify"
+
+match : Monad m => T -> T -> m Subst
+match (TApp l r) (TApp l' r') = do sl <- match l l'
+                                   sr <- match r r'
+                                   merge sl sr
+match (TVar u) t with (kind u == kind t) | True = return (u +-> t)
+match (TCon tc1) (TCon tc2) with (tc1==tc2) | True = return emptySubst
+match t1 t2 = error "types do not match"
