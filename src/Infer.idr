@@ -4,6 +4,8 @@ import Types
 import Debug.Error
 import Data.List
 
+%access public export
+
 Subst : Type
 Subst = List (Tyvar, T)
 
