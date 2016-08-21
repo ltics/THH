@@ -1,5 +1,7 @@
 module Types
 
+%access public export
+
 Id : Type
 Id = String
 
