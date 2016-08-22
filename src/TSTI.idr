@@ -5,6 +5,8 @@ import Unify
 import TypeClass
 import Debug.Error
 
+%access public export
+
 data Scheme = Forall (List Kind) (Qual T)
 
 Eq Scheme where

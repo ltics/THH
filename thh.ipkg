@@ -16,6 +16,7 @@ modules = Main
         , Unify
         , TypeClass
         , TSTI
+        , Infer
 
 executable = thh
 main = Main
