@@ -15,5 +15,7 @@ modules = Main
         , Types
         , Unify
         , TypeClass
+        , TSTI
+
 executable = thh
 main = Main

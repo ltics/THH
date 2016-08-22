@@ -4,6 +4,8 @@ import Types
 import Unify
 import Debug.Error
 
+%access public export
+
 -- (Num a) ⇒ a → Int -> [IsIn "Num" (TVar (MkTyvar "a" Star))] :⇒ (TVar (MkTyvar "a" Star) 'fn' tInt)
 
 data Pred   = IsIn Id T
@@ -12,6 +14,9 @@ data Qual t = (:=>) (List Pred) t
 
 Eq Pred where
   (IsIn i1 t1) == (IsIn i2 t2) = i1 == i2 && t1 == t2
+
+Eq t => Eq (Qual t) where
+  (preds1 :=> t1) == (preds2 :=> t2) = preds1 == preds2 && t1 == t2
 
 Types Pred where
   apply s (IsIn i t) = IsIn i (apply s t)
