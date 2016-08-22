@@ -1,1 +1,1 @@
-#thh!
+walk through core specs

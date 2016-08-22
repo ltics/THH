@@ -5,7 +5,7 @@ module Types
 Id : Type
 Id = String
 
-enumId : Int -> Id
+enumId : Integer -> Id
 enumId n = "@" ++ show n
 
 data Kind = Star
@@ -31,7 +31,7 @@ Eq Tycon where
 data T = TVar Tyvar
        | TCon Tycon
        | TApp T T
-       | TGen Int -- generic type
+       | TGen Integer -- generic type
 
 Eq T where
   (TVar v1) == (TVar v2) = v1 == v2
