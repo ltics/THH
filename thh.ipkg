@@ -1,15 +1,19 @@
 package thh
 
 version = 0.0.1
-brief = "Initial project template from idringen"
+brief = "explore core specs use idris"
 
 author = zjhsdtc <zjhsdtc@gmail.com>
 license = BSD3
-homepage = https://github.com/githubuser/thh
-sourceloc = git@github.com:githubuser/thh.git
-bugtracker = https://github.com/githubuser/thh/issues
+homepage = https://github.com/zjhmale/thh
+sourceloc = git@github.com:zjhmale/thh.git
+bugtracker = https://github.com/zjhmale/thh/issues
 
 sourcedir = src
 modules = Main
+        , Common
+        , Types
+        , Infer
+        , TypeClass
 executable = thh
 main = Main
