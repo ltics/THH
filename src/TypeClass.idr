@@ -8,7 +8,7 @@ import Debug.Error
 
 -- (Num a) ⇒ a → Int -> [IsIn "Num" (TVar (MkTyvar "a" Star))] :⇒ (TVar (MkTyvar "a" Star) 'fn' tInt)
 
-data Pred   = IsIn Id T
+data Pred = IsIn Id T
 infixr 4 :=>
 data Qual t = (:=>) (List Pred) t
 

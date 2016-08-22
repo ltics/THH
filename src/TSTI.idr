@@ -53,7 +53,7 @@ Applicative TI where
                                        (s', i', ab a))
 
 Monad TI where
-  (TIC f) >>= g = TIC (\s, n => let (s',m,x) = f s n in
+  (TIC f) >>= g = TIC (\s, n => let (s', m, x) = f s n in
                                 let TIC gx = g x in
                                 gx s' m)
 
@@ -61,7 +61,7 @@ runTI : TI a -> a
 runTI (TIC f) = let (_, _, x) = f emptySubst 0 in x
 
 getSubst : TI Subst
-getSubst = TIC (\s, n => (s,n,s))
+getSubst = TIC (\s, n => (s, n, s))
 
 extSubst : Subst -> TI ()
 extSubst s' = TIC (\s, n => (s' @@ s, n, ()))
