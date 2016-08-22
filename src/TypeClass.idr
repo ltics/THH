@@ -86,11 +86,9 @@ f <:> g = \ce => do ce' <- f ce
                     g ce'
 
 addClass : Id -> List Id -> EnvTransformer
-addClass i is ce = case defined (classes ce i) of
-                     True => error "class already defined"
-                     False => case any (not . defined . classes ce) is of
-                                True => error "superclass not defined"
-                                False => return (modify ce i (is, []))
+addClass i is ce = (defined $ classes ce i) ? (error "class already defined")
+                 : (any (not . defined . classes ce) is) ? (error "superclass not defined")
+                 : return $ modify ce i (is, [])
 
 addCoreClasses : EnvTransformer
 addCoreClasses = addClass "Eq" []
@@ -119,11 +117,9 @@ overlap : Pred -> Pred -> Bool
 overlap p q = defined (mguPred p q)
 
 addInst : List Pred -> Pred -> EnvTransformer
-addInst ps p@(IsIn i t) ce = case not (defined (classes ce i)) of
-                               True => error "no class for instance"
-                               False => case any (overlap p) qs of
-                                          True => error "overlapping instance"
-                                          False => return (modify ce i c)
+addInst ps p@(IsIn i t) ce = (not $ defined $ classes ce i) ? (error "no class for instance")
+                           : (any (overlap p) qs) ? (error "overlapping instance")
+                           : return $ modify ce i c
   where its : List Inst
         its = insts ce i
         qs : List Pred
@@ -140,3 +136,4 @@ exampleInsts = addPreludeClasses
                         IsIn "Ord" (TVar (MkTyvar "b" Star))]
                        (IsIn "Ord" (pair (TVar (MkTyvar "a" Star))
                                          (TVar (MkTyvar "b" Star))))
+

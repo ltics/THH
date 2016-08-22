@@ -1,6 +1,7 @@
 module Infer
 
 import Types
+import Common
 import Debug.Error
 import Data.List
 
@@ -44,13 +45,10 @@ merge s1 s2 = if agree then return (s1 ++ s2) else error "merge fails"
                     (map fst s1 `intersect` map fst s2)
 
 varBind : Monad m => Tyvar -> T -> m Subst
-varBind u t = case t == TVar u of
-                True => return emptySubst
-                False => case u `elem` tv t of
-                           True => error "occurs check fails"
-                           False => case kind u /= kind t of
-                                      True => error "kinds do not match"
-                                      False => return (u +-> t)
+varBind u t = (t == TVar u) ? (return emptySubst)
+            : (u `elem` tv t) ? (error "occurs check fails")
+            : (kind u /= kind t) ? (error "kinds do not match")
+            : return $ u +-> t
 
 -- most general unifier
 mgu : Monad m => T -> T -> m Subst
