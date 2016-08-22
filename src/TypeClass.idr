@@ -7,7 +7,8 @@ import Debug.Error
 -- (Num a) ⇒ a → Int -> [IsIn "Num" (TVar (MkTyvar "a" Star))] :⇒ (TVar (MkTyvar "a" Star) 'fn' tInt)
 
 data Pred   = IsIn Id T
-data Qual t = QArrow (List Pred) t
+infixr 4 :=>
+data Qual t = (:=>) (List Pred) t
 
 Eq Pred where
   (IsIn i1 t1) == (IsIn i2 t2) = i1 == i2 && t1 == t2
@@ -17,8 +18,8 @@ Types Pred where
   tv (IsIn i t)      = tv t
 
 Types t => Types (Qual t) where
-  apply s (QArrow ps t) = QArrow ps t
-  tv (QArrow ps t)      = tv ps `union` tv t
+  apply s (ps :=> t) = apply s ps :=> apply s t
+  tv (ps :=> t)      = tv ps `union` tv t
 
 -- lift Type to Pred
 lift : Monad m => (T -> T -> m Subst) -> Pred -> Pred -> m Subst
@@ -126,9 +127,9 @@ addInst ps p@(IsIn i t) ce = (not $ defined $ classes ce i) ? (error "no class f
   where its : List Inst
         its = insts ce i
         qs : List Pred
-        qs  = [ q | (QArrow _ q) <- its ]
+        qs  = [ q | (_ :=> q) <- its ]
         c : Class
-        c   = (super ce i, (QArrow ps (IsIn i t)) :: its)
+        c   = (super ce i, (ps :=> (IsIn i t)) :: its)
 
 exampleInsts : EnvTransformer
 exampleInsts = addPreludeClasses
@@ -151,8 +152,8 @@ msum = foldr (<|>) empty
 
 byInst : ClassEnv -> Pred -> Maybe (List Pred)
 byInst ce (IsIn i t) = msum [ tryInst it | it <- insts ce i ]
-  where tryInst (QArrow ps h) = do u <- matchPred h (IsIn i t) 
-                                   return (map (apply u) ps)
+  where tryInst (ps :=> h) = do u <- matchPred h (IsIn i t) 
+                                return (map (apply u) ps)
 
 entail : ClassEnv -> List Pred -> Pred -> Bool
 entail ce ps p = any (\s => p `elem` s) (map (bySuper ce) ps) ||
