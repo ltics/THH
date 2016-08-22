@@ -8,6 +8,8 @@ import Common
 import Debug.Error
 import Data.List
 
+%access public export
+
 Infer : Type -> Type -> Type
 Infer e t = ClassEnv -> List Assump -> e -> TI (List Pred, t)
 
