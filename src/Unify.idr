@@ -1,4 +1,4 @@
-module Infer
+module Unify
 
 import Types
 import Common

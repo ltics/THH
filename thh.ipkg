@@ -13,7 +13,7 @@ sourcedir = src
 modules = Main
         , Common
         , Types
-        , Infer
+        , Unify
         , TypeClass
 executable = thh
 main = Main

@@ -1,13 +1,16 @@
 module TypeClass
 
 import Types
-import Infer
+import Unify
 import Debug.Error
 
 -- (Num a) ⇒ a → Int -> [IsIn "Num" (TVar (MkTyvar "a" Star))] :⇒ (TVar (MkTyvar "a" Star) 'fn' tInt)
 
 data Pred   = IsIn Id T
 data Qual t = QArrow (List Pred) t
+
+Eq Pred where
+  (IsIn i1 t1) == (IsIn i2 t2) = i1 == i2 && t1 == t2
 
 Types Pred where
   apply s (IsIn i t) = IsIn i (apply s t)
@@ -137,3 +140,54 @@ exampleInsts = addPreludeClasses
                        (IsIn "Ord" (pair (TVar (MkTyvar "a" Star))
                                          (TVar (MkTyvar "b" Star))))
 
+
+bySuper : ClassEnv -> Pred -> List Pred
+bySuper ce p@(IsIn i t) = p :: concat [ bySuper ce (IsIn i' t) | i' <- super ce i ]
+
+-- https://github.com/ghc/ghc/blob/master/libraries/base/Data/Foldable.hs
+-- https://github.com/ghc/packages-base/blob/master/Control/Monad.hs
+msum : (Foldable t, Alternative f) => t (f a) -> f a
+msum = foldr (<|>) empty
+
+byInst : ClassEnv -> Pred -> Maybe (List Pred)
+byInst ce (IsIn i t) = msum [ tryInst it | it <- insts ce i ]
+  where tryInst (QArrow ps h) = do u <- matchPred h (IsIn i t) 
+                                   return (map (apply u) ps)
+
+entail : ClassEnv -> List Pred -> Pred -> Bool
+entail ce ps p = any (\s => p `elem` s) (map (bySuper ce) ps) ||
+                 case byInst ce p of
+                   Nothing => False
+                   Just qs => all (entail ce ps) qs
+
+inHnf : Pred -> Bool
+inHnf (IsIn c t) = hnf t
+  where hnf (TVar v)  = True
+        hnf (TCon tc) = False
+        hnf (TApp t _) = hnf t
+
+mutual
+  toHnfs : Monad m => ClassEnv -> List Pred -> m (List Pred)
+  toHnfs ce ps = do pss <- traverse (toHnf ce) ps
+                    return (concat pss)
+
+  toHnf : Monad m => ClassEnv -> Pred -> m (List Pred)
+  toHnf ce p = (inHnf p) ? (return [p])
+             : case byInst ce p of
+                 Nothing => error "context reduction"
+                 Just ps => toHnfs ce ps
+
+simplify : ClassEnv -> List Pred -> List Pred
+simplify ce = loop []
+  -- if there is no type signature for loop here, there will be an unreasonable error
+  where loop : List Pred -> List Pred -> List Pred
+        loop rs [] = rs
+        loop rs (p :: ps) = (entail ce (rs ++ ps) p) ? (loop rs ps)
+                          : loop (p :: rs) ps
+
+reduce: Monad m => ClassEnv -> List Pred -> m (List Pred)
+reduce ce ps = do qs <- toHnfs ce ps
+                  return $ simplify ce qs
+
+scEntail : ClassEnv -> List Pred -> Pred -> Bool
+scEntail ce ps p = any (\s => p `elem` s) $ map (bySuper ce) ps
